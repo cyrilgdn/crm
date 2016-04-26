@@ -34,12 +34,14 @@ class TestCrmClaimCode(common.TransactionCase):
         self.assertNotEqual(crm_claim_copy.code, self.crm_claim.code)
         self.assertEqual(crm_claim_copy.code, code)
 
+    def test_copy_multi(self):
+        claims = self.env['crm.claim'].search([], limit=2)
+        copies = claims.copy()
+        self.assertEqual(2, len(copies))
+        claims |= copies
+        self.assertEqual(4, len(claims))
+
     def _get_next_code(self):
-        d = self.ir_sequence_model._interpolation_dict()
-        prefix = self.ir_sequence_model._interpolate(
-            self.crm_sequence.prefix, d)
-        suffix = self.ir_sequence_model._interpolate(
-            self.crm_sequence.suffix, d)
-        code = (prefix + ('%%0%sd' % self.crm_sequence.padding %
-                          self.crm_sequence.number_next_actual) + suffix)
-        return code
+        return self.crm_sequence.get_next_char(
+            self.crm_sequence.number_next_actual
+        )
